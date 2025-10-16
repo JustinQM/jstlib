@@ -209,9 +209,9 @@ int main(void)
     printf("Varray count:%zu\n", varray_count(v));
 
     test = varray_back(v);
-    printf("Value at index %zu: %llu\n", varray_count(v) - 1, test.a);
+    printf("Value at index %zu: %lu\n", varray_count(v) - 1, test.a);
     test = varray_front(v);
-    printf("Value at front:  %llu\n", test.a);
+    printf("Value at front:  %lu\n", test.a);
 
     for(int i = varray_count(v); i > 0; i--)
     {
