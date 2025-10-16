@@ -37,7 +37,6 @@ void* _varray_init(size_t stride)
     return _varray_get_data(header);
 }
 
-
 void* _varray_grow(void* mem)
 {
     printf("Reallocation: GROW\n");
@@ -87,6 +86,27 @@ void* _varray_push(void* mem, const void* data, size_t stride)
     return mem;
 }
 
+void* _varray_insert(void* mem, const void* data, size_t i, size_t stride)
+{
+    if(mem == nullptr) mem = _varray_init(stride);
+    _Varray_Header* header = _varray_get_header(mem);
+    assert(i <= header->count && "Varray Insert: Cannot insert beyond last element");
+    if(header->capacity == header->count) 
+    {
+        mem = _varray_grow(mem);
+        header = _varray_get_header(mem);
+    } 
+    
+    void* src = ((uint8_t*)mem+(i*header->stride));
+    void* dest = (uint8_t*)src + header->stride;
+    size_t bytes = (header->count-i)*header->stride;
+    memmove(dest, src, bytes);
+    memcpy(src, data, header->stride);
+    header->count++;
+
+    return mem;
+}
+
 void* _varray_pop(void** raw_mem)
 {
     void* mem = *raw_mem;
@@ -100,6 +120,31 @@ void* _varray_pop(void** raw_mem)
     }
     header->count--;
     return ((uint8_t*)mem + (header->stride * header->count));
+}
+
+void* _varray_erase(void* mem, size_t i)
+{
+    _Varray_Header* header = _varray_get_header(mem);
+    assert(i < header->count);
+    if(header->count < header->capacity / VARRAY_SHRINK_THRESHOLD)
+    {
+        mem = _varray_shrink(mem);
+        header = _varray_get_header(mem);
+    }
+
+    if(i == header->count - 1)
+    {
+        header->count--;
+        return mem;
+    }
+
+    void* src = (uint8_t*)mem + ((i+1) * header->stride);
+    void* dest = (uint8_t*)mem + (i * header->stride);
+    size_t bytes = header->stride * (header->count - (i+1));
+    memmove(dest, src, bytes);
+    header->count--;
+
+    return mem;
 }
 
 void* _varray_at(void* mem, size_t i)
@@ -140,7 +185,14 @@ void _varray_free(void* mem)
     v = _varray_push(v, &_tmp, sizeof(_tmp)); \
 } while(0)
 
+#define varray_insert(v, value, i) do { \
+    auto _tmp = (value); \
+    v = _varray_insert(v, &_tmp, i, sizeof(_tmp)); \
+} while(0)
+
 #define varray_pop(v) *(typeof(v))_varray_pop((void**)&v)
+
+#define varray_erase(v, i) v = _varray_erase(v, i)
 
 #define varray_at(v, i) *(typeof(v))_varray_at(v, i)
 
@@ -171,52 +223,40 @@ void _varray_free(void* mem)
 }
 
 //TODO:
-//insert
-//erase
 //swap
 //?shrink_to_fit
+//
 
-typedef struct {
-    uint64_t a;
-    uint64_t b;
-} TestType;
+void print_varray(int* v)
+{
+    for(int i = 0; i < varray_count(v); i++)
+    {
+        printf("%d,",v[i]);
+    }
+
+    printf("\n");
+    printf("Count:%zu\n", varray_count(v));
+}
 
 int main(void)
 {
-    Varray(TestType) v = {};
+    Varray(int) v = {};
 
-    varray_reserve(v, 72);
-
-    printf("Varray capacity:%zu\n", varray_capacity(v));
-    printf("Varray count:%zu\n", varray_count(v));
-    printf("Varray stride:%zu\n", varray_stride(v));
-
-    TestType test = {993, 69};
-
-    varray_push(v, test);
+    varray_reserve(v, 100);
 
     for(int i = 0; i <= 69; i++)
     {
-        TestType think = {i, i};
-        varray_push(v, think);
+        varray_push(v, i);
     }
 
-    test.a = 69;
+    print_varray(v);
+    varray_insert(v, 420, 10);
+    print_varray(v);
+    varray_erase(v, 10);
+    print_varray(v);
 
-    varray_push(v, test);
-
-    printf("Varray capacity:%zu\n", varray_capacity(v));
-    printf("Varray count:%zu\n", varray_count(v));
-
-    test = varray_back(v);
-    printf("Value at index %zu: %lu\n", varray_count(v) - 1, test.a);
-    test = varray_front(v);
-    printf("Value at front:  %lu\n", test.a);
-
-    for(int i = varray_count(v); i > 0; i--)
-    {
-        varray_pop(v);
-    }
+    int test = varray_at(v, 10);
+    printf("Test Value:%d\n", test);
 
     varray_free(v);
 
