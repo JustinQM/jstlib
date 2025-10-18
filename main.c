@@ -3,28 +3,26 @@
 #define JSTLIB_IMPLEMENTATION
 #include "jstlib.h"
 
-void print_varray(int* v);
 int main(void)
 {
-    Varray(int) v = {};
 
-    varray_reserve(v, 100);
+    Varray(char) string = {};
+    char* raw_string = "Hello, World!";
 
-    for(int i = 0; i <= 69; i++)
+    varray_reserve(string, strlen(raw_string) + 1);
+
+    for (int i = 0; i < strlen(raw_string); i++)
     {
-        varray_push(v, i);
+        varray_push(string, raw_string[i]);
     }
 
-    print_varray(v);
-    varray_insert(v, 420, 10);
-    print_varray(v);
-    varray_erase(v, 10);
-    print_varray(v);
+    varray_push(string, '\0');
 
-    int test = varray_at(v, 10);
-    printf("Test Value:%d\n", test);
+    printf("%s\n", string);
+    printf("Length of varray:%zu\n", varray_count(string));
+    printf("Capacity of varray:%zu\n", varray_capacity(string));
 
-    varray_free(v);
+    varray_free(string);
 
     return 0;
 }
