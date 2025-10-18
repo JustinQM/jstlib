@@ -8,14 +8,11 @@ int main(void)
     Varray(char) string = {};
     char* raw_string = "Hello, World!";
 
-    varray_reserve(string, strlen(raw_string) + 1);
+    varray_reserve(string, strlen(raw_string));
+    varray_push_many(string, raw_string, strlen(raw_string));
 
-    for (int i = 0; i < strlen(raw_string); i++)
-    {
-        varray_push(string, raw_string[i]);
-    }
-
-    varray_push(string, '\0');
+    char* raw_string2 = " Goodbye, World!";
+    varray_push_many(string, raw_string2, strlen(raw_string2) + 1);
 
     printf("%s\n", string);
     printf("Length of varray:%zu\n", varray_count(string));
