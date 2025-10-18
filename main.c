@@ -5,7 +5,6 @@
 
 int main(void)
 {
-
     Varray(char) string = {};
     char* raw_string = "Hello, World!";
 
