@@ -21,12 +21,12 @@ typedef struct _Varray_Header {
 
 #define varray_reserve(v, newcap) do { \
     v = _varray_reserve(v, newcap, sizeof*(v)); \
-} while(0)
+} while (0)
 
 #define varray_push(v, value) do { \
     auto _tmp = (value); \
     v = _varray_push(v, &_tmp, sizeof(_tmp)); \
-} while(0)
+} while (0)
 
 #define varray_push_many(v, data, n) \
     v = _varray_push_many(v, data, n, sizeof(*v))
@@ -34,7 +34,7 @@ typedef struct _Varray_Header {
 #define varray_insert(v, value, i) do { \
     auto _tmp = (value); \
     v = _varray_insert(v, &_tmp, i, sizeof(_tmp)); \
-} while(0)
+} while (0)
 
 #define varray_pop(v) *(typeof(v))_varray_pop((void**)&v)
 
@@ -51,7 +51,7 @@ typedef struct _Varray_Header {
 #define varray_free(v) do { \
     _varray_free((void*)v); \
     v = nullptr; \
-} while(0)
+} while (0)
 
 #define varray_count(v) _varray_count(v)
 
@@ -117,9 +117,9 @@ void* _varray_shrink(void* v)
 
 void* _varray_reserve(void* v, size_t newcap, size_t stride)
 {
-    if(v == nullptr) v = _varray_init(stride);
+    if (v == nullptr) v = _varray_init(stride);
     _Varray_Header* header = _varray_get_header(v);
-    if(header->capacity > newcap) return v;
+    if (header->capacity > newcap) return v;
 
     header->capacity = newcap;
     size_t bytes = sizeof(*header) + (header->capacity * header->stride);
@@ -130,9 +130,9 @@ void* _varray_reserve(void* v, size_t newcap, size_t stride)
 
 void* _varray_push(void* v, const void* data, size_t stride)
 {
-    if(v == nullptr) v = _varray_init(stride);
+    if (v == nullptr) v = _varray_init(stride);
     _Varray_Header* header = _varray_get_header(v);
-    if(header->capacity == header->count) 
+    if (header->capacity == header->count) 
     {
         v = _varray_grow(v);
         header = _varray_get_header(v);
@@ -146,7 +146,7 @@ void* _varray_push(void* v, const void* data, size_t stride)
 
 void* _varray_push_many(void* v, const void* data, size_t n, size_t stride)
 {
-    if(v == nullptr) v = _varray_init(stride);
+    if (v == nullptr) v = _varray_init(stride);
     _Varray_Header* header = _varray_get_header(v);
 
     v = _varray_reserve(v, header->count + n, stride);
@@ -161,10 +161,10 @@ void* _varray_push_many(void* v, const void* data, size_t n, size_t stride)
 
 void* _varray_insert(void* v, const void* data, size_t i, size_t stride)
 {
-    if(v == nullptr) v = _varray_init(stride);
+    if (v == nullptr) v = _varray_init(stride);
     _Varray_Header* header = _varray_get_header(v);
     assert(i <= header->count && "Varray Insert: Cannot insert beyond last element");
-    if(header->capacity == header->count) 
+    if (header->capacity == header->count) 
     {
         v = _varray_grow(v);
         header = _varray_get_header(v);
@@ -185,7 +185,7 @@ void* _varray_pop(void** v_ptr)
     void* v = *v_ptr;
     assert(v != nullptr);
     _Varray_Header* header = _varray_get_header(v);
-    if(header->count < header->capacity / VARRAY_SHRINK_THRESHOLD)
+    if (header->count < header->capacity / VARRAY_SHRINK_THRESHOLD)
     {
         *v_ptr = _varray_shrink(v);
         v = *v_ptr;
@@ -199,13 +199,13 @@ void* _varray_erase(void* v, size_t i)
 {
     _Varray_Header* header = _varray_get_header(v);
     assert(i < header->count);
-    if(header->count < header->capacity / VARRAY_SHRINK_THRESHOLD)
+    if (header->count < header->capacity / VARRAY_SHRINK_THRESHOLD)
     {
         v = _varray_shrink(v);
         header = _varray_get_header(v);
     }
 
-    if(i == header->count - 1)
+    if (i == header->count - 1)
     {
         header->count--;
         return v;
